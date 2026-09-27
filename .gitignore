@@ -4,6 +4,9 @@ npm-debug.log*
 yarn-error.log*
 package-lock.json
 
+# local server logs
+serve.log
+
 # editor / OS
 .DS_Store
 Thumbs.db

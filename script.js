@@ -1,6 +1,7 @@
 /* ==========================================================================
-   BluePeak Builders — page behaviour
-   Sticky nav, mobile menu, project tabs, lightbox, form validation, reveals
+   SparklePro Cleaning Services — page behaviour
+   Sticky nav, mobile menu, scroll spy, before/after slider, lightbox,
+   booking + contact form validation, reveals
    ========================================================================== */
 (function () {
   'use strict';
@@ -75,26 +76,26 @@
   }
 
   /* ------------------------------------------------------------------ *
-   * Project tabs
+   * Before / After comparison sliders
    * ------------------------------------------------------------------ */
-  var tabs = $$('.tab');
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      var key = tab.dataset.tab;
+  $$('.ba__frame').forEach(function (frame) {
+    var after = frame.querySelector('.ba__img--after');
+    var handle = frame.querySelector('.ba__handle');
+    var range = frame.querySelector('.ba__range');
+    if (!after || !range) return;
 
-      tabs.forEach(function (t) {
-        var active = t === tab;
-        t.classList.toggle('is-active', active);
-        t.setAttribute('aria-selected', String(active));
-      });
+    var setPos = function (pct) {
+      pct = Math.max(0, Math.min(100, pct));
+      after.style.clipPath = 'inset(0 0 0 ' + pct + '%)';
+      if (handle) handle.style.left = pct + '%';
+      range.value = String(Math.round(pct));
+      range.setAttribute('aria-valuenow', String(Math.round(pct)));
+    };
 
-      $$('[data-panel]').forEach(function (panel) {
-        var show = panel.dataset.panel === key;
-        panel.hidden = !show;
-        if (show) {
-          $$('.reveal', panel).forEach(function (el) { el.classList.add('is-in'); });
-        }
-      });
+    setPos(parseFloat(range.value) || 50);
+
+    range.addEventListener('input', function () {
+      setPos(parseFloat(range.value));
     });
   });
 
@@ -144,11 +145,8 @@
   });
 
   /* ------------------------------------------------------------------ *
-   * Contact form validation
+   * Form validation (booking + contact)
    * ------------------------------------------------------------------ */
-  var form = $('#contactForm');
-  var status = $('#formStatus');
-
   var EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
   var PHONE = /^[+]?[\d][\d\s\-()]{7,17}$/;
 
@@ -170,21 +168,33 @@
     if (input.type === 'tel' && !PHONE.test(value)) {
       showError(input, 'Enter a valid phone number.'); return false;
     }
-    if (input.tagName === 'TEXTAREA' && value.length < 10) {
+    if (input.type === 'date') {
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var picked = new Date(value + 'T00:00:00');
+      if (isNaN(picked.getTime()) || picked < today) {
+        showError(input, 'Please pick today or a future date.'); return false;
+      }
+    }
+    if (input.tagName === 'TEXTAREA' && input.required && value.length < 10) {
       showError(input, 'Please add a few more details (10+ characters).'); return false;
     }
     showError(input, '');
     return true;
   };
 
-  if (form) {
-    var inputs = $$('input, textarea', form);
+  var initForm = function (form, onDone) {
+    if (!form) return;
+    var inputs = $$('input, select, textarea', form);
 
     inputs.forEach(function (input) {
       input.addEventListener('blur', function () {
         if (input.value.trim()) validate(input);
       });
       input.addEventListener('input', function () {
+        if (input.closest('.field').classList.contains('is-invalid')) validate(input);
+      });
+      input.addEventListener('change', function () {
         if (input.closest('.field').classList.contains('is-invalid')) validate(input);
       });
     });
@@ -198,16 +208,25 @@
       });
 
       if (firstBad) {
-        if (status) { status.textContent = ''; }
         firstBad.focus();
         return;
       }
 
-      if (status) status.textContent = 'Thanks! Your enquiry has been received — we\u2019ll get back to you within one working day.';
+      onDone();
       form.reset();
       inputs.forEach(function (input) { showError(input, ''); });
     });
-  }
+  };
+
+  initForm($('#bookingForm'), function () {
+    var status = $('#bookStatus');
+    if (status) status.textContent = 'Booking request received! We\u2019ll confirm your slot by call or WhatsApp shortly.';
+  });
+
+  initForm($('#contactForm'), function () {
+    var status = $('#contactStatus');
+    if (status) status.textContent = 'Thanks! Your enquiry has been received \u2014 we\u2019ll get back to you within one working day.';
+  });
 
   /* ------------------------------------------------------------------ *
    * Reveal on scroll

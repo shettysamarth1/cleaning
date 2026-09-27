@@ -1,7 +1,7 @@
 {
-  "name": "bluepeak-builders",
+  "name": "sparklepro-cleaning",
   "version": "1.0.0",
-  "description": "BluePeak Builders — a single-page construction company website. Zero build step; open index.html directly.",
+  "description": "SparklePro Cleaning Services — a single-page cleaning company website. Zero build step; open index.html directly.",
   "private": true,
   "scripts": {
     "start": "serve .",
