@@ -1,0 +1,13 @@
+{
+  "name": "bluepeak-builders",
+  "version": "1.0.0",
+  "description": "BluePeak Builders — a single-page construction company website. Zero build step; open index.html directly.",
+  "private": true,
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
